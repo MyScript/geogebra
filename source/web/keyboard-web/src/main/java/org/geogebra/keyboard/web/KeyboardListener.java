@@ -77,13 +77,24 @@ public interface KeyboardListener {
 
 	/**
 	 * Inserts the given text at the caret position
-	 * 
+   *
 	 * @param text
 	 *            text to be inserted
 	 */
 	void insertString(String text);
 
 	/**
+   * Replaces the entire content of the field with the given text.
+   * Default falls back to inserting at the caret; override where the
+   * underlying field supports an atomic full replace.
+   *
+   * @param text new content for the field
+   */
+  default void replaceContent(String text) {
+    insertString(text);
+  }
+
+  /**
 	 * @return true if spreadsheet view
 	 */
 	boolean isSVCell();

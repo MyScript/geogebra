@@ -46,9 +46,13 @@ public final class OnscreenTabbedKeyboard extends TabbedKeyboard
 	 *            keyboard context
 	 * @param hasMoreButton
 	 *            whether to show more/help button
+   * @param onSwitchToInputMethod
+   *            called when the user wants to switch to the alternative input
+   *            method panel, or {@code null} to hide that button
 	 */
-	public OnscreenTabbedKeyboard(HasKeyboard app, boolean hasMoreButton) {
-		super(app, hasMoreButton);
+  public OnscreenTabbedKeyboard(HasKeyboard app, boolean hasMoreButton,
+      Runnable onSwitchToInputMethod) {
+    super(app, hasMoreButton, onSwitchToInputMethod);
 		ClickStartHandler.initDefaults(this, true, true);
 	}
 	

@@ -1002,6 +1002,11 @@ public class MathFieldInternal
 		try {
 			Formula formula = formulaConverter.buildFormula(text);
 			setFormula(formula);
+      // setFormula() alone doesn't notify listeners the way keystrokes do
+      // (insertString()/insertFunction() call onKeyTyped()), so callers replacing
+      // content programmatically (e.g. handwriting recognition) need this too,
+      // otherwise the algebra item/preview only refreshes on the next focus change.
+      onKeyTyped();
 		} catch (ParseException e) {
 			FactoryProvider.debugS("Problem parsing: " + text);
 			FactoryProvider.getInstance().debug(e);

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.geogebra.common.gui.inputfield.HasLastItem;
+import org.geogebra.common.kernel.geos.GeoElement;
 import org.geogebra.common.kernel.geos.GeoInputBox;
 import org.geogebra.common.main.App;
 import org.geogebra.common.main.App.InputPosition;
@@ -41,6 +42,7 @@ import org.geogebra.web.full.gui.dialog.text.TextEditPanelProcessing;
 import org.geogebra.web.full.gui.openfileview.HeaderFileView;
 import org.geogebra.web.full.gui.util.ScriptArea;
 import org.geogebra.web.full.gui.util.VirtualKeyboardGUI;
+import org.geogebra.web.full.gui.view.algebra.AlgebraViewW;
 import org.geogebra.web.full.gui.view.algebra.RadioTreeItem;
 import org.geogebra.web.full.gui.view.algebra.RetexKeyboardListener;
 import org.geogebra.web.full.util.keyboard.AutocompleteProcessing;
@@ -65,7 +67,11 @@ public final class KeyboardManager
 		implements RequiresResize, KeyboardManagerInterface, SettingListener<GeneralSettings> {
 
 	private final AppW app;
+	/** currently active keyboard, either {@link #typedKeyboard} or {@link #inputMethodKeyboard} */
 	private @Nullable VirtualKeyboardGUI keyboard;
+	private OnscreenTabbedKeyboard typedKeyboard;
+	private InputMethodKeyboardPanel inputMethodKeyboard;
+	private Panel currentAppFrame;
 
 	private String originalBodyPadding;
 	private final Style bodyStyle;
@@ -179,14 +185,79 @@ public final class KeyboardManager
 	 */
 	public void addKeyboard(Panel appFrame) {
 		ensureKeyboardsExist();
+    this.currentAppFrame = appFrame;
+    attachActiveKeyboard();
+    updateStyle();
+  }
+
+  private void attachActiveKeyboard() {
 		if (detachController.isEnabled()) {
 			detachController.addAsDetached(keyboard);
 			app.addWindowResizeListener(this);
-		} else {
-			appFrame.add(keyboard);
+    } else if (currentAppFrame != null) {
+      currentAppFrame.add(keyboard);
+    }
+  }
 
+  /**
+   * Switches the currently shown panel between the typed on-screen keyboard
+   * and the alternative input method panel, keeping the same trigger points
+   * (button click / equation-edit focus) and text field.
+   */
+  public void toggleInputMethod() {
+    VirtualKeyboardGUI previous = keyboard;
+    boolean switchingToInputMethod = previous == typedKeyboard;
+    keyboard = switchingToInputMethod ? ensureInputMethodKeyboardExists()
+        : ensureTypedKeyboardExists();
+    if (processing != null) {
+      keyboard.setProcessing(processing);
+    }
+    if (previous == keyboard) {
+      return;
+    }
+    if (previous != null && currentAppFrame != null && !detachController.isEnabled()) {
+      currentAppFrame.remove(previous.asWidget());
+    }
+    attachActiveKeyboard();
+    keyboard.show();
+  }
+
+  private InputMethodKeyboardPanel ensureInputMethodKeyboardExists() {
+    if (inputMethodKeyboard == null) {
+      inputMethodKeyboard = new InputMethodKeyboardPanel(getInputMethodUrl(),
+          new InputMethodSettingsManager(app),
+          this::getLastSelectedItemListener, this::toggleInputMethod);
 		}
-		updateStyle();
+    return inputMethodKeyboard;
+  }
+
+  /**
+   * @return the configured input method adapter URL, or an empty string when no
+   *         alternative input method is configured (the feature is then off)
+   */
+  private String getInputMethodUrl() {
+    return app.getAppletParameters().getParamInputMethodUrl();
+  }
+
+  /**
+   * @return a fresh {@link KeyboardListener} targeting whichever algebra item was
+   *         last selected (independent of edit focus, which goes stale once the
+   *         user draws in the input method panel), or {@code null} if none.
+   */
+  private KeyboardListener getLastSelectedItemListener() {
+    if (!(app.getAlgebraView() instanceof AlgebraViewW)) {
+      return null;
+    }
+    AlgebraViewW algebraView = (AlgebraViewW) app.getAlgebraView();
+    GeoElement lastSelected = algebraView.getLastSelectedGeo();
+    if (lastSelected == null) {
+      return null;
+    }
+    RadioTreeItem item = algebraView.getNode(lastSelected);
+    if (item == null) {
+      return null;
+    }
+    return new AlgebraMathFieldProcessing(item, app.getLastItemProvider());
 	}
 
 	/**
@@ -215,7 +286,7 @@ public final class KeyboardManager
 	public void setListeners(MathKeyboardListener textField,
 			KeyboardCloseListener listener) {
 		VirtualKeyboardGUI keyboardUI = ensureKeyboardsExist();
-		((OnscreenTabbedKeyboard) keyboardUI).clearAndUpdate();
+    keyboardUI.clearAndUpdate();
 		if (textField != null) {
 			setOnScreenKeyboardTextField(textField);
 		}
@@ -230,15 +301,30 @@ public final class KeyboardManager
 		return ensureKeyboardsExist();
 	}
 
-	private VirtualKeyboardGUI ensureKeyboardsExist() {
-		if (keyboard == null) {
+  /**
+   * @return the typed on-screen keyboard, creating it if needed. Does not
+   *         change which panel is currently active.
+   */
+  private OnscreenTabbedKeyboard ensureTypedKeyboardExists() {
+    if (typedKeyboard == null) {
 			boolean showMoreButton = app.getConfig().showKeyboardHelpButton()
 					&& !shouldDetach();
-			keyboard = new OnscreenTabbedKeyboard((HasKeyboard) app, showMoreButton);
+      typedKeyboard = new OnscreenTabbedKeyboard((HasKeyboard) app, showMoreButton,
+          getInputMethodUrl().isEmpty() ? null : this::toggleInputMethod);
 			if (processing != null) {
-				keyboard.setProcessing(processing);
+        typedKeyboard.setProcessing(processing);
 			}
-			return keyboard;
+    }
+    return typedKeyboard;
+  }
+
+  /**
+   * @return the currently active keyboard panel (typed or input method),
+   *         defaulting to the typed keyboard on first use.
+   */
+  private VirtualKeyboardGUI ensureKeyboardsExist() {
+    if (keyboard == null) {
+      keyboard = ensureTypedKeyboardExists();
 		}
 		return keyboard;
 	}

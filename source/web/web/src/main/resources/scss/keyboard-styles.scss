@@ -1,4 +1,5 @@
 @use 'colorMap' as *;
+@use 'z-index';
 
 $tab123-width: 644px;
 
@@ -289,6 +290,28 @@ $tab123-width: 644px;
 		background-color: transparent;
 	}
 
+	.KeyboardSwitcher .switcherContents .switchToInputMethodButton {
+		float: right;
+		border-radius: 18px;
+		border: 0;
+		margin: 4px;
+		padding: 4px 10px;
+		box-shadow: none;
+		cursor: pointer;
+		opacity: 0.84;
+
+		&:hover {
+			opacity: 1;
+		}
+
+		// no label text: the input method is only known once its adapter loads
+		&::before {
+			content: "\270E";
+			font-size: 18px;
+			line-height: 1;
+		}
+	}
+
 	.TabbedKeyBoard { 
 		z-index: 500; /* same as $z-dialog in GGB */
 		position: absolute;
@@ -345,5 +368,41 @@ $tab123-width: 644px;
 	@keyframes removeKeyBoard {
 		0% {max-height: 228px;}
 		100% {max-height: 0px;}
+	}
+
+	/* same box as .TabbedKeyBoard: the input method panel replaces the typed
+	   keyboard in the applet frame, so it must occupy exactly its slot */
+	.inputMethodKeyboardPanel {
+		z-index: 500; /* same as $z-dialog in GGB */
+		position: absolute;
+		bottom: 0;
+		width: 100%;
+		height: 221px; /* TabbedKeyboard.TOTAL_HEIGHT */
+		display: flex;
+		flex-direction: column;
+		/* same surface as .TabbedKeyBoard.KeyBoard */
+		background-color: neutral("200");
+		box-shadow: 0px -2px 4px 0px #1C1C1F26;
+	}
+
+	.inputMethodKeyboardSurface {
+		flex: 1;
+		position: relative;
+		min-height: 0;
+	}
+
+	.inputMethodKeyboardToolbar {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		padding: 4px 8px;
+
+		.gwt-Button {
+			border-radius: 18px;
+			border: 0;
+			padding: 4px 14px;
+			box-shadow: none;
+			cursor: pointer;
+		}
 	}
 }
