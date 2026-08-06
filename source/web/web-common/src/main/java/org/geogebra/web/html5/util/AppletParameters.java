@@ -112,6 +112,29 @@ public class AppletParameters {
 	}
 
 	/**
+   * URL of a script registering an alternative input method (e.g. handwriting)
+   * through {@code window.GeoGebraInputMethods.register}. Empty means no
+   * alternative input method is offered.
+   *
+   * Falls back to the {@code inputMethodUrl} URL query parameter when the
+   * article attribute is not set, so an adapter can be tried out by link.
+   * SECURITY: the value is loaded as a script, so anyone who can hand a user a
+   * link can run code in the page. Acceptable for the POC deployment only -
+   * gate it (host allowlist, or attribute-only) before any public deployment.
+   *
+   * @return the data-param-inputMethodUrl article attribute, or empty String
+   */
+  public String getParamInputMethodUrl() {
+    if (!hasAttribute("inputMethodUrl")) {
+      String fromUrl = NavigatorUtil.getUrlParameter("inputMethodUrl");
+      if (fromUrl != null) {
+        return fromUrl;
+      }
+    }
+    return getStringDataParam("inputMethodUrl", "");
+  }
+
+  /**
 	 * @return the data-param-id article attribute as String if set else
 	 *         AppWeb.DEFAULT_APPLET_ID
 	 */

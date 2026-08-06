@@ -1504,6 +1504,14 @@ public final class AlgebraViewW extends Tree implements LayerView, AlgebraView,
 	}
 
 	/**
+	 * @return the tree item currently being edited, or null if none (does not
+	 *         fall back to the input row)
+	 */
+	public @Nullable RadioTreeItem getActiveTreeItemOrNull() {
+		return activeItem;
+	}
+
+	/**
 	 * Create new input panel and add it
 	 */
 	public void setInputPanel() {

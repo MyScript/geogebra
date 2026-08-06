@@ -139,7 +139,10 @@ public class LatexTreeItemController extends RadioTreeItemController
 	}
 
 	private void hideKeyboardIfNotLast() {
-		if (!item.isLastRadioTreeItem()) {
+		// this runs from a deferred blur handler, so another row may already have
+		// requested the keyboard synchronously; hiding it here would tear that
+		// freshly shown keyboard (and a mounted input method) down again
+		if (!item.isLastRadioTreeItem() && !CancelEventTimer.cancelKeyboardHide()) {
 			app.hideKeyboard();
 		}
 	}

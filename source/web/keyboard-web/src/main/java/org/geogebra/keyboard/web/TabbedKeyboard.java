@@ -93,6 +93,7 @@ public class TabbedKeyboard extends FlowPanel
 	protected boolean keyboardWanted = false;
 	private ButtonRepeater repeater;
 	private final boolean hasMoreButton;
+  private final Runnable onSwitchToInputMethod;
 
 	private KeyboardSwitcher.SwitcherButton ansSwitcher;
 	private KeyboardSwitcher.SwitcherButton defaultSwitcher;
@@ -104,11 +105,26 @@ public class TabbedKeyboard extends FlowPanel
 	 *            whether to show help button
 	 */
 	public TabbedKeyboard(HasKeyboard appKeyboard, boolean hasMoreButton) {
+    this(appKeyboard, hasMoreButton, null);
+  }
+
+  /**
+   * @param appKeyboard
+   *            {@link HasKeyboard}
+   * @param hasMoreButton
+   *            whether to show help button
+   * @param onSwitchToInputMethod
+   *            called when the user wants to switch to the alternative input
+   *            method panel, or {@code null} to hide that button
+   */
+  public TabbedKeyboard(HasKeyboard appKeyboard, boolean hasMoreButton,
+      Runnable onSwitchToInputMethod) {
 		this.hasKeyboard = appKeyboard;
 		this.locale = hasKeyboard.getLocalization();
 		this.keyboardLanguageTag = locale.getLanguageTag();
 		this.switcher = new KeyboardSwitcher(this);
 		this.hasMoreButton = hasMoreButton;
+    this.onSwitchToInputMethod = onSwitchToInputMethod;
 		this.keyboardMap = new HashMap<>();
 		getElement().setAttribute("data-nosnippet", "");
 
@@ -171,6 +187,9 @@ public class TabbedKeyboard extends FlowPanel
 		if (hasMoreButton) {
 			switcher.addMoreButton();
 		}
+    if (onSwitchToInputMethod != null) {
+      switcher.addInputMethodButton();
+    }
 
 		createAnsMathKeyboard();
 		createDefaultKeyboard();
@@ -189,6 +208,9 @@ public class TabbedKeyboard extends FlowPanel
 	}
 
 	private void buildGUIScientific() {
+    if (onSwitchToInputMethod != null) {
+      switcher.addInputMethodButton();
+    }
 		createAnsMathKeyboard();
 		createDefaultKeyboard();
 		createFunctionsKeyboard();
@@ -682,6 +704,16 @@ public class TabbedKeyboard extends FlowPanel
 	}
 
 	/**
+   * Called when the user clicks the button to switch to the alternative
+   * input method panel.
+   */
+  void switchToInputMethod() {
+    if (onSwitchToInputMethod != null) {
+      onSwitchToInputMethod.run();
+    }
+  }
+
+  /**
 	 * @param keyboardType
 	 *            keyboard type
 	 */

@@ -35,6 +35,7 @@ public class KeyboardSwitcher extends FlowPanel {
 	private FlowPanel contents;
 	private Map<KeyboardType, SwitcherButton> switches;
 	private ToggleButton moreButton;
+  private Button inputMethodButton;
 
 	public class SwitcherButton extends Button {
 
@@ -163,6 +164,27 @@ public class KeyboardSwitcher extends FlowPanel {
 						.getAbsoluteLeft() + moreButton.getOffsetWidth(),
 				moreButton.getAbsoluteTop()));
 	}
+
+  protected final void addInputMethodButton() {
+    if (inputMethodButton == null) {
+      createInputMethodButton();
+    }
+    contents.add(inputMethodButton);
+  }
+
+  private void createInputMethodButton() {
+    // no label text: the input method is only known once its adapter has loaded,
+    // so the button is identified by its icon style alone
+    inputMethodButton = new Button();
+    inputMethodButton.getElement().setAttribute("type", "button");
+    inputMethodButton.addStyleName("switchToInputMethodButton");
+    ClickStartHandler.init(inputMethodButton, new ClickStartHandler(true, true) {
+      @Override
+      public void onClickStart(int x, int y, PointerEventType type) {
+        tabbedkeyboard.switchToInputMethod();
+      }
+    });
+  }
 
 	protected void reset() {
 		if (moreButton != null) {

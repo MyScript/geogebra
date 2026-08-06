@@ -188,6 +188,7 @@ tasks.register("prepareS3Upload") {
 tasks.register<Copy>("deployIntoWar") {
     dependsOn(copyHtml, tasks.gwtCompile)
     description = "Copies/updates the GWT production compilation directory (web3d, ...) to the war directory."
+    destinationDir = file(warDirRel)
     into("web3d/sourcemaps/") {
         from(layout.buildDirectory.file("gwt/deploy/web3d/symbolMaps/").get().asFile)
     }
@@ -234,6 +235,7 @@ tasks.named<GwtDevModeTask>("gwtDevMode") {
 tasks.register<Zip>("createDraftBundleZip") {
     dependsOn(tasks.compileSass)
     description = "Creates the Math Apps Bundle file."
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     destinationDirectory = file(warDirRel)
     archiveBaseName = "geogebra-bundle"
     from(tasks.gwtCompile) {

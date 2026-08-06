@@ -16,6 +16,7 @@
 
 package org.geogebra.web.editor;
 
+
 import org.geogebra.editor.share.event.KeyEvent;
 import org.geogebra.editor.share.input.KeyboardInputAdapter;
 import org.geogebra.editor.share.util.JavaKeyCodes;
@@ -76,6 +77,11 @@ public class MathFieldProcessing implements KeyboardListener {
 	public void insertString(String text) {
 		KeyboardInputAdapter.onKeyboardInput(mf.getInternal(), text);
 	}
+
+  @Override
+  public void replaceContent(String text) {
+    mf.parse(mf.getInternal().getInputController().convert(text));
+  }
 
 	/**
 	 * @param text

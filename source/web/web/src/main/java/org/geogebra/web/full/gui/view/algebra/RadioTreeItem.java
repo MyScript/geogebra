@@ -2079,6 +2079,15 @@ public abstract class RadioTreeItem extends AVTreeItem implements MathKeyboardLi
 	}
 
 	/**
+	 * Suppress (or re-enable) blur-triggered auto-commit for an indefinite
+	 * duration, unlike {@link #preventBlur()} which only holds for 200ms.
+	 * @param prevent whether to suppress blur handling until further notice
+	 */
+	public void setPreventBlur(boolean prevent) {
+		getController().setPreventBlur(prevent);
+	}
+
+	/**
 	 * Switches editor to text mode
 	 *
 	 * @param plainTextMode

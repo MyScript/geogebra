@@ -58,8 +58,30 @@ public final class AlgebraMathFieldProcessing extends MathFieldProcessing {
 		mf.setFocus(focus);
 	}
 
+	/**
+	 * Suppress (or re-enable) blur-triggered auto-commit on the underlying row
+	 * for as long as needed, e.g. for the whole duration of a programmatic
+	 * multi-step edit session (ink recognition): the row's DOM element can lose
+	 * native focus for reasons unrelated to and not synchronized with any single
+	 * {@link #replaceContent} call (e.g. an external input surface capturing
+	 * focus while the user draws), so a fixed-duration guard around one call is
+	 * not enough to prevent every intermediate result from committing as a new
+	 * geo.
+	 * @param prevent whether to suppress blur handling until further notice
+	 */
+	public void setPreventBlur(boolean prevent) {
+		avInput.setPreventBlur(prevent);
+	}
+
 	@Override
 	public boolean requestsAns() {
 		return ansProvider != null && avInput != null;
+	}
+
+	/**
+	 * @return the algebra-view row this instance edits
+	 */
+	public RadioTreeItem getAvInput() {
+		return avInput;
 	}
 }

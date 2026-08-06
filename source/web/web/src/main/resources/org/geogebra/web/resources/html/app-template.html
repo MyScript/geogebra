@@ -78,6 +78,8 @@ var codebase = "<!--CODEBASE-->";
 			setParamFromURL("fontAwesome");
 			setParamFromURL("featureSet");
 			setParamFromURL("webfonts");
+      		setParamFromURL("showKeyboardOnFocus");
+
 			if (isEmbed() || unbundled) {
 				$e("ggw").setAttribute("data-param-showAppsPicker","false");
 				$e("appsPicker") && $e("appsPicker").style.setProperty("display", "none");

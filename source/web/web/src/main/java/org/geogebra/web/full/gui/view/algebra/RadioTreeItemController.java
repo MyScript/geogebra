@@ -311,6 +311,16 @@ public class RadioTreeItemController implements ClickHandler,
 		t.schedule(200);
 	}
 
+	/**
+	 * Suppress (or re-enable) blur-triggered auto-commit for an indefinite
+	 * duration, unlike {@link #preventBlur()} which only holds for 200ms. The
+	 * caller is responsible for eventually passing {@code false} to release it.
+	 * @param prevent whether to suppress blur handling until further notice
+	 */
+	public void setPreventBlur(boolean prevent) {
+		this.preventBlur = prevent;
+	}
+
 	@Override
 	public void onTouchMove(TouchMoveEvent event) {
 		event.stopPropagation();

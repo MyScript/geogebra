@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Input method test</title>
+<!--
+  Dev page for the alternative input method extension point.
+
+  The adapter is NOT part of GeoGebra: it is a script hosted separately that
+  calls window.GeoGebraInputMethods.register(...). Point this page at yours:
+
+    inputmethod-test.html?adapter=http://localhost:8090/ggb-iink-adapter.js
+    inputmethod-test.html?app=graphing     (default: classic)
+    inputmethod-test.html?module=webSimple (default: web3d)
+
+  Omitting ?adapter loads the applet with no input method at all, which is the
+  check that the feature stays entirely off when unconfigured.
+-->
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 0; padding: 4px 8px; }
+  #status { font-family: monospace; color: #666; margin-bottom: 8px; }
+  #status b { color: #000; }
+  #probe { font-family: monospace; margin-top: 8px; white-space: pre-wrap; }
+  .ok { color: #0a0; }
+  .bad { color: #c00; }
+</style>
+</head>
+<body>
+<div id="status"></div>
+<div id="applet"></div>
+<div id="probe"></div>
+
+<script>
+  var query = new URLSearchParams(location.search);
+  var adapter = query.get('adapter') || '';
+  var appName = query.get('app') || 'classic';
+  var module = query.get('module') || 'web3d';
+
+  var applet = document.getElementById('applet');
+  applet.className = 'geogebraweb';
+  applet.setAttribute('data-param-appName', appName);
+  applet.setAttribute('data-param-showKeyboardOnFocus', 'true');
+  // classic renders no input bar / algebra input unless asked, and without one
+  // there is nothing to focus, so the on-screen keyboard never opens
+  applet.setAttribute('data-param-showAlgebraInput', 'true');
+  applet.setAttribute('data-param-showAlgebraView', 'true');
+  applet.setAttribute('data-param-showToolBar', 'true');
+  applet.setAttribute('data-param-showMenuBar', 'true');
+  applet.setAttribute('data-param-perspective', query.get('perspective') || 'AG');
+  // fill the window, so the keyboard and the input method panel get the same
+  // room they would in a real deployment
+  applet.setAttribute('data-param-width', String(window.innerWidth));
+  applet.setAttribute('data-param-height', String(window.innerHeight - 90));
+  if (adapter) {
+    applet.setAttribute('data-param-inputMethodUrl', adapter);
+  }
+
+  document.getElementById('status').innerHTML = 'app <b>' + appName
+      + '</b> | module <b>' + module + '</b> | inputMethodUrl <b>'
+      + (adapter || '(none - input method off)') + '</b>';
+
+  // Self-diagnosis: reports what actually reached the DOM, so a missing button
+  // can be told apart from a missing parameter.
+  function probe() {
+    var lines = [];
+    function line(good, text) {
+      lines.push('<span class="' + (good ? 'ok' : 'bad') + '">'
+          + (good ? 'OK  ' : 'NO  ') + text + '</span>');
+    }
+    var attr = applet.getAttribute('data-param-inputMethodUrl');
+    line(!!attr === !!adapter, 'data-param-inputMethodUrl = ' + attr);
+    line(!!document.querySelector('.geogebraweb canvas, .GeoGebraFrame'),
+        'applet rendered');
+    line(!!document.querySelector('.KeyboardSwitcher'),
+        'keyboard built (open it: click an input field)');
+    var btn = document.querySelector('.switchToInputMethodButton');
+    line(!!btn === !!adapter, 'switchToInputMethodButton in DOM'
+        + (btn ? ' (' + btn.offsetWidth + 'x' + btn.offsetHeight + 'px)' : ''));
+    line(!!window.GeoGebraInputMethods === false || !!adapter,
+        'window.GeoGebraInputMethods ' + (window.GeoGebraInputMethods
+            ? 'installed' : 'not installed (installed on first pencil click)'));
+    document.getElementById('probe').innerHTML = lines.join('\n');
+  }
+  setInterval(probe, 1000);
+
+  var script = document.createElement('script');
+  script.src = module + '/' + module + '.nocache.js';
+  document.head.appendChild(script);
+</script>
+</body>
+</html>
