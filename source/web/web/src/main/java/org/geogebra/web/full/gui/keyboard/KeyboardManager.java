@@ -240,20 +240,23 @@ public final class KeyboardManager
   }
 
   /**
-   * @return a fresh {@link KeyboardListener} targeting whichever algebra item was
-   *         last selected (independent of edit focus, which goes stale once the
-   *         user draws in the input method panel), or {@code null} if none.
+   * @return a fresh {@link KeyboardListener} targeting the algebra item the user
+   *         is editing (the input row when no existing item is being edited),
+   *         or {@code null} if there is none.
    */
   private KeyboardListener getLastSelectedItemListener() {
     if (!(app.getAlgebraView() instanceof AlgebraViewW)) {
       return null;
     }
     AlgebraViewW algebraView = (AlgebraViewW) app.getAlgebraView();
-    GeoElement lastSelected = algebraView.getLastSelectedGeo();
-    if (lastSelected == null) {
-      return null;
+    // the edited item, not the selected one: a selection can point at an
+    // unrelated row (or a leftover from an earlier click), which would make the
+    // recognized content overwrite that row instead of the one being edited
+    RadioTreeItem item = algebraView.getActiveTreeItem();
+    if (item == null) {
+      GeoElement lastSelected = algebraView.getLastSelectedGeo();
+      item = lastSelected == null ? null : algebraView.getNode(lastSelected);
     }
-    RadioTreeItem item = algebraView.getNode(lastSelected);
     if (item == null) {
       return null;
     }
