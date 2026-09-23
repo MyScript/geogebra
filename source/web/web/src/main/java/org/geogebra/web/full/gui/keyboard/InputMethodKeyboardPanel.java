@@ -33,7 +33,9 @@ import org.geogebra.web.html5.util.inputmethod.InputMethodHandle;
 import org.geogebra.web.html5.util.inputmethod.InputMethodLoader;
 import org.geogebra.web.html5.util.inputmethod.InputMethodSettingsProvider;
 import org.gwtproject.core.client.Scheduler;
+import org.gwtproject.user.client.ui.Anchor;
 import org.gwtproject.user.client.ui.FlowPanel;
+import org.gwtproject.user.client.ui.Image;
 import org.gwtproject.user.client.ui.RequiresResize;
 import org.gwtproject.user.client.ui.Widget;
 
@@ -54,6 +56,7 @@ public class InputMethodKeyboardPanel extends FlowPanel
     implements VirtualKeyboardGUI, RequiresResize {
 
   private final FlowPanel mountPanel;
+  private final Anchor attribution;
   private final String adapterUrl;
   private final InputMethodSettingsProvider settingsProvider;
   private final Supplier<KeyboardListener> lastSelectedItemSupplier;
@@ -100,6 +103,11 @@ public class InputMethodKeyboardPanel extends FlowPanel
 
     FlowPanel toolbar = new FlowPanel();
     toolbar.addStyleName("inputMethodKeyboardToolbar");
+    // filled once the descriptor is known, see showAttribution()
+    attribution = new Anchor();
+    attribution.addStyleName("inputMethodAttribution");
+    attribution.setVisible(false);
+    toolbar.add(attribution);
     StandardButton clearBtn = new StandardButton(
         MaterialDesignResources.INSTANCE.delete_black(), null, 24, 24);
     clearBtn.setTitle("Clear");
@@ -210,6 +218,7 @@ public class InputMethodKeyboardPanel extends FlowPanel
 
   private void mount(InputMethodDescriptor descriptor,
       JsPropertyMap<String> settings) {
+    showAttribution(descriptor);
     InputMethodContext context = InputMethodContext.create(settings,
         this::onResult, this::onError);
     try {
@@ -218,6 +227,28 @@ public class InputMethodKeyboardPanel extends FlowPanel
       mounting = false;
       onError("Input method failed to start: " + e.getMessage());
     }
+  }
+
+  private void showAttribution(InputMethodDescriptor descriptor) {
+    String url = descriptor.attributionUrl;
+    // the adapter is third-party script: only allow plain web links
+    if (url == null || !(url.startsWith("https://") || url.startsWith("http://"))) {
+      return;
+    }
+    String text = descriptor.attributionText == null ? "" : descriptor.attributionText;
+    attribution.setHref(url);
+    attribution.getElement().setAttribute("target", "_blank");
+    attribution.getElement().setAttribute("rel", "noopener noreferrer");
+    attribution.setTitle(text);
+    // mount() runs again after each destroy: replace, don't append
+    attribution.setText(text);
+    if (descriptor.attributionLogoUrl != null) {
+      Image logo = new Image(descriptor.attributionLogoUrl);
+      // screen readers read "<text> <label>", e.g. "Powered By MyScript handwriting"
+      logo.setAltText(descriptor.label);
+      attribution.getElement().appendChild(logo.getElement());
+    }
+    attribution.setVisible(true);
   }
 
   private void onResult(String latex) {

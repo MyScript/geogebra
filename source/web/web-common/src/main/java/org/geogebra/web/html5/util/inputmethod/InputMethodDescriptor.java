@@ -39,6 +39,15 @@ public class InputMethodDescriptor {
   /** settings to ask the user for before mounting; may be undefined or empty */
   public InputMethodSetting[] settings;
 
+  /** optional provider attribution link shown in the panel's toolbar (http/https) */
+  public String attributionUrl;
+
+  /** optional attribution link text (e.g. "Powered By") */
+  public String attributionText;
+
+  /** optional attribution logo image URL, shown after the text */
+  public String attributionLogoUrl;
+
   /**
    * @param element element to mount the input surface into
    * @param context settings plus the callbacks used to report results and errors

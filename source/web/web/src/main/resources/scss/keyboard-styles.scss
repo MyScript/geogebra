@@ -395,10 +395,35 @@ $tab123-width: 644px;
 	}
 
 	.inputMethodKeyboardToolbar {
+		position: relative;
 		display: flex;
 		justify-content: flex-end;
 		gap: 8px;
 		padding: 4px 8px;
+
+		// centered on the whole bar, independent of the right-aligned buttons
+		.inputMethodAttribution {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			color: #1c1c1f;
+			font-size: 14px;
+			font-weight: 500;
+			white-space: nowrap;
+			text-decoration: none;
+
+			&:hover {
+				text-decoration: underline;
+			}
+
+			img {
+				height: 20px;
+			}
+		}
 
 		.gwt-Button {
 			border-radius: 18px;
