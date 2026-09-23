@@ -306,7 +306,10 @@ $tab123-width: 644px;
 
 		// no label text: the input method is only known once its adapter loads
 		&::before {
-			content: "\270E";
+			// keep the escape literal: a raw non-ASCII char makes Sass prefix the
+			// compressed CSS with a BOM, which the release build injects as <style>
+			// text where it corrupts the first selector (.matOpenKeyboardBtn)
+			content: unquote('"\\270E"');
 			font-size: 18px;
 			line-height: 1;
 			// mirrored so the pencil leans the same way as GeoGebra's pen icon
