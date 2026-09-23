@@ -357,11 +357,16 @@ public final class KeyboardManager
 
   /**
    * @return the currently active keyboard panel (typed or input method),
-   *         defaulting to the typed keyboard on first use.
+   *         defaulting on first use to the input method when one is
+   *         configured, to the typed keyboard otherwise.
    */
   private VirtualKeyboardGUI ensureKeyboardsExist() {
     if (keyboard == null) {
-      keyboard = ensureTypedKeyboardExists();
+      keyboard = getInputMethodUrl().isEmpty() ? ensureTypedKeyboardExists()
+          : ensureInputMethodKeyboardExists();
+      if (processing != null) {
+        keyboard.setProcessing(processing);
+      }
 		}
 		return keyboard;
 	}
